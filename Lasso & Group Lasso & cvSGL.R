@@ -1,5 +1,9 @@
 install.packages("SGL")
+install.packages("glmnet")
+install.packages("gglasso")
 library("SGL")
+library("glmnet")
+library("gglasso")
 library("Matrix")
 library("MASS")
 
@@ -7,8 +11,6 @@ set.seed(2)
 
 ########################################################
 # Simulation with Multivariate Normal Distribution - cvSGL
-# Author - Amy Hu
-# Date - November 5 2022
 ########################################################
 # n = Number of Observations; p = Number of Predictors; size.groups = 10 means dividing 100 predictors into 10 groups.
 n = 50; p = 100; size.groups = 10  
@@ -81,12 +83,16 @@ simulation <- function(blocki_10by10, model_type){
 			#length(cvFit$fit$beta[,id.optimal])
 			matEstimates_case[i,] <- cvFit$fit$beta[,id.optimal]
 		}
-		if(model_type=='SGL'){
-			cvFit = SGL(data, index, type="linear")
+		if(model_type=='GL'){
+			optimallambda = cv.gglasso(X,y, group=index)$lambda.1se
+			cvFit = gglasso(X,y, group=index, lambda=optimallambda)
+			#cvFit = SGL(data, index, type="linear")
 			# Figure out how to select optimal lambda
 		}
 		if(model_type=='Lasso'){
-			cvFit = SGL(data, index, type="linear", alpha=1)
+			optimallambda = cv.glmnet(X,y, alpha=1, nfolds=10)$lambda.1se
+			cvFit = glmnet(X,y, alpha=1, lambda=optimallambda)
+			#cvFit = SGL(data, index, type="linear", alpha=1)
 			# Figure out how to select optimal lambda
 		}
 		
@@ -106,10 +112,10 @@ matEstimates_case4 <- simulation(blocki_10by10_case4, 'cvSGL')
 print(head(matEstimates_case1))
 
 ## SGL - Not yet working -> How to find optimal lambda and alpha?
-#matEstimates_sgl_case1 <- simulation(blocki_10by10_case1, 'SGL')
-#matEstimates_sgl_case2 <- simulation(blocki_10by10_case2, 'SGL')
-#matEstimates_sgl_case3 <- simulation(blocki_10by10_case3, 'SGL')
-#matEstimates_sgl_case4 <- simulation(blocki_10by10_case4, 'SGL')
+#matEstimates_gl_case1 <- simulation(blocki_10by10_case1, 'GL')
+#matEstimates_gl_case2 <- simulation(blocki_10by10_case2, 'GL')
+#matEstimates_gl_case3 <- simulation(blocki_10by10_case3, 'GL')
+#matEstimates_gl_case4 <- simulation(blocki_10by10_case4, 'GL')
 
 ## Lasso - Not yet working -> How to find optimal lambda and alpha?
 #matEstimates_lasso_case1 <- simulation(blocki_10by10_case1, 'Lasso')
@@ -178,11 +184,11 @@ metrics_case2 <- eval_performance(matEstimates_case2)
 metrics_case3 <- eval_performance(matEstimates_case3)
 metrics_case4 <- eval_performance(matEstimates_case4)
 
-## SGL - Not yet working
-#metrics_sgl_case1 <- eval_performance(matEstimates_sgl_case1)
-#metrics_sgl_case2 <- eval_performance(matEstimates_sgl_case2)
-#metrics_sgl_case3 <- eval_performance(matEstimates_sgl_case3)
-#metrics_sgl_case4 <- eval_performance(matEstimates_sgl_case4)
+## GL - Not yet working
+#metrics_gl_case1 <- eval_performance(matEstimates_gl_case1)
+#metrics_gl_case2 <- eval_performance(matEstimates_gl_case2)
+#metrics_gl_case3 <- eval_performance(matEstimates_gl_case3)
+#metrics_gl_case4 <- eval_performance(matEstimates_gl_case4)
 
 ## Lasso - Not yet working
 #metrics_lasso_case1 <- eval_performance(matEstimates_lasso_case1)
@@ -215,11 +221,11 @@ metric_averages(metrics_case2)
 metric_averages(metrics_case3)
 metric_averages(metrics_case4)
 
-## SGL - Not yet working
-#metric_averages(metrics_sgl_case1)
-#metric_averages(metrics_sgl_case2)
-#metric_averages(metrics_sgl_case3)
-#metric_averages(metrics_sgl_case4)
+## GL - Not yet working
+#metric_averages(metrics_gl_case1)
+#metric_averages(metrics_gl_case2)
+#metric_averages(metrics_gl_case3)
+#metric_averages(metrics_gl_case4)
 
 ## Lasso - Not yet working
 #metric_averages(metrics_lasso_case1)
