@@ -79,6 +79,7 @@ cov <- as.matrix(cov)
 cov[cov==NA] <- 0
 is.na(cov)
 cov
+mode(cov)
 
 # nxp design matrix that is generated from normal distribution -> rnorm(x*p, mean=0, sd=#)
 set.seed(5)
@@ -125,4 +126,3 @@ optimalLambdas
 
 #Penalization unbiased
 #Refit by least square regression
-

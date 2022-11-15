@@ -2,8 +2,8 @@ install.packages("SGL")
 install.packages("glmnet")
 install.packages("gglasso")
 library("SGL")
-library("glmnet")
-library("gglasso")
+#library("glmnet")
+#library("gglasso")
 library("Matrix")
 library("MASS")
 
@@ -21,6 +21,7 @@ index <- ceiling(1:p / size.groups)
 #-----Case 1 - No correlation between predictors-------#
 #10 by 10 block with 1 on diagonal and 0 off diagonals -> Identity Matrix
 blocki_10by10_case1 <- diag(10)
+blocki_10by10_case1
 
 #-----Case 2 - Weak correlation between predictors-----#
 #10 by 10 block with 1 on diagonal and 0.2 off diagonals -> Identity Matrix
@@ -42,10 +43,15 @@ blocki_10by10_case4
 
 
 simulation <- function(blocki_10by10, model_type){
+	
+	#model_type='Lasso'
 	# cov is the block digonl matrix with 10 10x10 blocks on the main diagonal
-	cov <- bdiag(replicate(10, blocki_10by10, simplify=FALSE)) 
+	#blocki_10by10 <- blocki_10by10_case1
+	cov <- bdiag(replicate(10, blocki_10by10, simplify=FALSE))
 	cov <- as.matrix(cov)
+	cov
 	cov[cov==NA] <- 0
+	mode(cov)
 
 	# X is the nxp design matrix that is generated from normal distribution -> rnorm(x*p, mean=0, sd=#)
 	set.seed(2)
@@ -67,13 +73,13 @@ simulation <- function(blocki_10by10, model_type){
 		data = list(x = X, y = y)
 		
 		if(model_type=='cvSGL'){
-			cvFit = cvSGL(data, index, type="linear")
+			cvFit = cvSGL(data, index)
 			#names(cvFit)
 			# lldiff - An nlam vector of cross validated negative log likelihoods (squared error loss in the linear case, along the regularization path)
 			# This gives the average error for each lambda choice -> average cross validation score based on the Beta choices
 			# Lower cross-validation score = Less Error <- Desirable
 			cvs <- cvFit$lldiff
-
+			cvs
 			id.optimal <- which.min(cvs)
 			optimalLambdas[i] <- id.optimal
 			#id.optimal
@@ -84,19 +90,26 @@ simulation <- function(blocki_10by10, model_type){
 			matEstimates_case[i,] <- cvFit$fit$beta[,id.optimal]
 		}
 		if(model_type=='GL'){
-			optimallambda = cv.gglasso(X,y, group=index)$lambda.1se
-			cvFit = gglasso(X,y, group=index, lambda=optimallambda)
-			#cvFit = SGL(data, index, type="linear")
-			# Figure out how to select optimal lambda
+			#??cvSGL
+			cvFit = cvSGL(data, index, type="linear", alpha=0)
+			cvFit$lambdas[id.optimal]
+			cvFit$fit$beta[,id.optimal]
+			cvs <- cvFit$lldiff
+			id.optimal <- which.min(cvs)
+			optimalLambdas[i] <- id.optimal
+			matEstimates_case[i,] <- cvFit$fit$beta[,id.optimal]
 		}
 		if(model_type=='Lasso'){
-			optimallambda = cv.glmnet(X,y, alpha=1, nfolds=10)$lambda.1se
-			cvFit = glmnet(X,y, alpha=1, lambda=optimallambda)
-			#cvFit = SGL(data, index, type="linear", alpha=1)
-			# Figure out how to select optimal lambda
+			cvFit = cvSGL(data, index, type="linear", alpha=1)
+			cvs <- cvFit$lldiff
+
+			id.optimal <- which.min(cvs)
+			optimalLambdas[i] <- id.optimal
+			cvFit$lambdas[id.optimal]
+			cvFit$fit$beta[,id.optimal]
+			matEstimates_case[i,] <- cvFit$fit$beta[,id.optimal]
 		}
 		
-
 
 	}
 	print(head(matEstimates_case))
@@ -109,19 +122,18 @@ matEstimates_case2 <- simulation(blocki_10by10_case2, 'cvSGL')
 matEstimates_case3 <- simulation(blocki_10by10_case3, 'cvSGL')
 matEstimates_case4 <- simulation(blocki_10by10_case4, 'cvSGL')
 
-print(head(matEstimates_case1))
 
-## SGL - Not yet working -> How to find optimal lambda and alpha?
-#matEstimates_gl_case1 <- simulation(blocki_10by10_case1, 'GL')
-#matEstimates_gl_case2 <- simulation(blocki_10by10_case2, 'GL')
-#matEstimates_gl_case3 <- simulation(blocki_10by10_case3, 'GL')
-#matEstimates_gl_case4 <- simulation(blocki_10by10_case4, 'GL')
+# GL
+matEstimates_gl_case1 <- simulation(blocki_10by10_case1, 'GL')
+matEstimates_gl_case2 <- simulation(blocki_10by10_case2, 'GL')
+matEstimates_gl_case3 <- simulation(blocki_10by10_case3, 'GL')
+matEstimates_gl_case4 <- simulation(blocki_10by10_case4, 'GL')
 
-## Lasso - Not yet working -> How to find optimal lambda and alpha?
-#matEstimates_lasso_case1 <- simulation(blocki_10by10_case1, 'Lasso')
-#matEstimates_lasso_case2 <- simulation(blocki_10by10_case2, 'Lasso')
-#matEstimates_lasso_case3 <- simulation(blocki_10by10_case3, 'Lasso')
-#matEstimates_lasso_case4 <- simulation(blocki_10by10_case4, 'Lasso')
+## Lasso
+matEstimates_lasso_case1 <- simulation(blocki_10by10_case1, 'Lasso')
+matEstimates_lasso_case2 <- simulation(blocki_10by10_case2, 'Lasso')
+matEstimates_lasso_case3 <- simulation(blocki_10by10_case3, 'Lasso')
+matEstimates_lasso_case4 <- simulation(blocki_10by10_case4, 'Lasso')
 
 
 
@@ -143,16 +155,19 @@ eval_performance <- function(matEstimates_case){
 	percentCorrectNonZero <- 0
 	numCorrectOverall <- 0
 	percentCorrectOverall <- 0
-	for (i in 1:nrow(matEstimates_case1)){
+	#print(head(matEstimates_case))
+	for (i in 1:nrow(matEstimates_case)){
 		for (j in 1:15){
-			#print(matEstimates_case1[i,j])
+			print(matEstimates_case[3,1])
+			print(matEstimates_case[i,j])
 			if (matEstimates_case[i,j]!=0){
 				numCorrectNonZero <- numCorrectNonZero+1
 				}
 		}
 		for (j in 16:p){
+			print(j)
 			#print(matEstimates_case1[i,j])
-			if (abs(matEstimates_case1[i,j])<=0.01){
+			if (abs(matEstimates_case[i,j])<=0.01){
 				numCorrectZero <- numCorrectZero+1
 				}
 		}
@@ -184,17 +199,17 @@ metrics_case2 <- eval_performance(matEstimates_case2)
 metrics_case3 <- eval_performance(matEstimates_case3)
 metrics_case4 <- eval_performance(matEstimates_case4)
 
-## GL - Not yet working
-#metrics_gl_case1 <- eval_performance(matEstimates_gl_case1)
-#metrics_gl_case2 <- eval_performance(matEstimates_gl_case2)
-#metrics_gl_case3 <- eval_performance(matEstimates_gl_case3)
-#metrics_gl_case4 <- eval_performance(matEstimates_gl_case4)
+## GL
+metrics_gl_case1 <- eval_performance(matEstimates_gl_case1)
+metrics_gl_case2 <- eval_performance(matEstimates_gl_case2)
+metrics_gl_case3 <- eval_performance(matEstimates_gl_case3)
+metrics_gl_case4 <- eval_performance(matEstimates_gl_case4)
 
-## Lasso - Not yet working
-#metrics_lasso_case1 <- eval_performance(matEstimates_lasso_case1)
-#metrics_lasso_case2 <- eval_performance(matEstimates_lasso_case2)
-#metrics_lasso_case3 <- eval_performance(matEstimates_lasso_case3)
-#metrics_lasso_case4 <- eval_performance(matEstimates_lasso_case4)
+## Lasso
+metrics_lasso_case1 <- eval_performance(matEstimates_lasso_case1)
+metrics_lasso_case2 <- eval_performance(matEstimates_lasso_case2)
+metrics_lasso_case3 <- eval_performance(matEstimates_lasso_case3)
+metrics_lasso_case4 <- eval_performance(matEstimates_lasso_case4)
 
 
 
@@ -221,17 +236,17 @@ metric_averages(metrics_case2)
 metric_averages(metrics_case3)
 metric_averages(metrics_case4)
 
-## GL - Not yet working
-#metric_averages(metrics_gl_case1)
-#metric_averages(metrics_gl_case2)
-#metric_averages(metrics_gl_case3)
-#metric_averages(metrics_gl_case4)
+## GL
+metric_averages(metrics_gl_case1)
+metric_averages(metrics_gl_case2)
+metric_averages(metrics_gl_case3)
+metric_averages(metrics_gl_case4)
 
-## Lasso - Not yet working
-#metric_averages(metrics_lasso_case1)
-#metric_averages(metrics_lasso_case2)
-#metric_averages(metrics_lasso_case3)
-#metric_averages(metrics_lasso_case4)
+## Lasso
+metric_averages(metrics_lasso_case1)
+metric_averages(metrics_lasso_case2)
+metric_averages(metrics_lasso_case3)
+metric_averages(metrics_lasso_case4)
 
 
 
