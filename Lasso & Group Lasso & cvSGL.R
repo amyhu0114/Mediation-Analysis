@@ -73,7 +73,7 @@ simulation <- function(blocki_10by10, model_type){
 		data = list(x = X, y = y)
 		
 		if(model_type=='cvSGL'){
-			cvFit = cvSGL(data, index)
+			cvFit = cvSGL(data, index, alpha=0.25)
 			#names(cvFit)
 			# lldiff - An nlam vector of cross validated negative log likelihoods (squared error loss in the linear case, along the regularization path)
 			# This gives the average error for each lambda choice -> average cross validation score based on the Beta choices
@@ -136,6 +136,34 @@ matEstimates_lasso_case3 <- simulation(blocki_10by10_case3, 'Lasso')
 matEstimates_lasso_case4 <- simulation(blocki_10by10_case4, 'Lasso')
 
 
+# beta_bias is the mean of all 1000 rounds of estimated beta values subtracted by the true beta value
+
+# Take difference for each row -> Absolute value the difference -> Take Average of the differences
+# For true zero, average over all 0's -> one variable
+beta_bias_gl_case4 <- rep(0, 15)
+for (i in 1:15){
+	beta_bias_gl_case4[i] <- mean(abs(matEstimates_gl_case4[,i] - beta[i]))
+	#print(beta_bias_gl_case4[i])
+	}
+beta_bias_gl_case4
+
+head(matEstimates_lasso_case2)
+beta_bias_lasso_case4 <- rep(0, 15)
+for (i in 1:15){
+	beta_bias_lasso_case4[i] <- mean(matEstimates_lasso_case4[,i]) - beta[i]
+	}
+beta_bias_lasso_case4
+
+
+# beta_bias_sd is the standard deviation of all 1000 differences between the true beta value and the estimated beta value
+beta_diff_gl_case1 <- rep(0, nrow=1000, ncol=15)
+for (i in 1:15){
+	beta_diff_gl_case1[,i] <- matEstimates_gl_case1[,i]
+	}
+beta_diff_gl_case1
+
+
+
 
 ##########Performance Metrics Evaluation#########
 # Evaluates the performance of the prediction by counting the number of correctly identified zero and non-zero predictors and calculating the corresponding percentages.
@@ -158,16 +186,16 @@ eval_performance <- function(matEstimates_case){
 	#print(head(matEstimates_case))
 	for (i in 1:nrow(matEstimates_case)){
 		for (j in 1:15){
-			print(matEstimates_case[3,1])
-			print(matEstimates_case[i,j])
+			#print(matEstimates_case[3,1])
+			#print(matEstimates_case[i,j])
 			if (matEstimates_case[i,j]!=0){
 				numCorrectNonZero <- numCorrectNonZero+1
 				}
 		}
 		for (j in 16:p){
-			print(j)
+			#print(j)
 			#print(matEstimates_case1[i,j])
-			if (abs(matEstimates_case[i,j])<=0.01){
+			if (matEstimates_case[i,j]==0){
 				numCorrectZero <- numCorrectZero+1
 				}
 		}
@@ -212,7 +240,7 @@ metrics_lasso_case3 <- eval_performance(matEstimates_lasso_case3)
 metrics_lasso_case4 <- eval_performance(matEstimates_lasso_case4)
 
 
-
+head(matEstimates_lasso_case2)
 
 metric_averages <- function(matEstimates_case){
 	averageNumCorrectNonZero <- mean(matEstimates_case[,1])
@@ -247,6 +275,7 @@ metric_averages(metrics_lasso_case1)
 metric_averages(metrics_lasso_case2)
 metric_averages(metrics_lasso_case3)
 metric_averages(metrics_lasso_case4)
+
 
 
 
