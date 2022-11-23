@@ -42,7 +42,7 @@ blocki_10by10_case4[blocki_10by10_case4 == 0] <- 0.8
 blocki_10by10_case4
 
 
-simulation <- function(blocki_10by10, model_type){
+simulation <- function(blocki_10by10, model_type, a){
 	
 	#model_type='Lasso'
 	# cov is the block digonl matrix with 10 10x10 blocks on the main diagonal
@@ -73,7 +73,7 @@ simulation <- function(blocki_10by10, model_type){
 		data = list(x = X, y = y)
 		
 		if(model_type=='cvSGL'){
-			cvFit = cvSGL(data, index, alpha=0.25)
+			cvFit = cvSGL(data, index, alpha=a)
 			#names(cvFit)
 			# lldiff - An nlam vector of cross validated negative log likelihoods (squared error loss in the linear case, along the regularization path)
 			# This gives the average error for each lambda choice -> average cross validation score based on the Beta choices
@@ -117,23 +117,36 @@ simulation <- function(blocki_10by10, model_type){
 }
 
 # cvSGL
-matEstimates_case1 <- simulation(blocki_10by10_case1, 'cvSGL')
-matEstimates_case2 <- simulation(blocki_10by10_case2, 'cvSGL')
-matEstimates_case3 <- simulation(blocki_10by10_case3, 'cvSGL')
-matEstimates_case4 <- simulation(blocki_10by10_case4, 'cvSGL')
+# alpha=0.95
+matEstimates_case1 <- simulation(blocki_10by10_case1, 'cvSGL', 0.95)
+matEstimates_case2 <- simulation(blocki_10by10_case2, 'cvSGL', 0.95)
+matEstimates_case3 <- simulation(blocki_10by10_case3, 'cvSGL', 0.95)
+matEstimates_case4 <- simulation(blocki_10by10_case4, 'cvSGL', 0.95)
+
+#alpha=0.5
+matEstimates_a05_case1 <- simulation(blocki_10by10_case1, 'cvSGL', 0.5)
+matEstimates_a05_case2 <- simulation(blocki_10by10_case2, 'cvSGL', 0.5)
+matEstimates_a05_case3 <- simulation(blocki_10by10_case3, 'cvSGL', 0.5)
+matEstimates_a05_case4 <- simulation(blocki_10by10_case4, 'cvSGL', 0.5)
+
+#alpha=0.25
+matEstimates_a025_case1 <- simulation(blocki_10by10_case1, 'cvSGL', 0.25)
+matEstimates_a025_case2 <- simulation(blocki_10by10_case2, 'cvSGL', 0.25)
+matEstimates_a025_case3 <- simulation(blocki_10by10_case3, 'cvSGL', 0.25)
+matEstimates_a025_case4 <- simulation(blocki_10by10_case4, 'cvSGL', 0.25)
 
 
 # GL
-matEstimates_gl_case1 <- simulation(blocki_10by10_case1, 'GL')
-matEstimates_gl_case2 <- simulation(blocki_10by10_case2, 'GL')
-matEstimates_gl_case3 <- simulation(blocki_10by10_case3, 'GL')
-matEstimates_gl_case4 <- simulation(blocki_10by10_case4, 'GL')
+matEstimates_gl_case1 <- simulation(blocki_10by10_case1, 'GL', 0)
+matEstimates_gl_case2 <- simulation(blocki_10by10_case2, 'GL', 0)
+matEstimates_gl_case3 <- simulation(blocki_10by10_case3, 'GL', 0)
+matEstimates_gl_case4 <- simulation(blocki_10by10_case4, 'GL', 0)
 
 ## Lasso
-matEstimates_lasso_case1 <- simulation(blocki_10by10_case1, 'Lasso')
-matEstimates_lasso_case2 <- simulation(blocki_10by10_case2, 'Lasso')
-matEstimates_lasso_case3 <- simulation(blocki_10by10_case3, 'Lasso')
-matEstimates_lasso_case4 <- simulation(blocki_10by10_case4, 'Lasso')
+matEstimates_lasso_case1 <- simulation(blocki_10by10_case1, 'Lasso', 1)
+matEstimates_lasso_case2 <- simulation(blocki_10by10_case2, 'Lasso', 1)
+matEstimates_lasso_case3 <- simulation(blocki_10by10_case3, 'Lasso', 1)
+matEstimates_lasso_case4 <- simulation(blocki_10by10_case4, 'Lasso', 1)
 
 
 
@@ -194,10 +207,25 @@ eval_performance <- function(matEstimates_case){
 }
 
 #cvSGL
+# alpha=0.95
 metrics_case1 <- eval_performance(matEstimates_case1)
 metrics_case2 <- eval_performance(matEstimates_case2)
 metrics_case3 <- eval_performance(matEstimates_case3)
 metrics_case4 <- eval_performance(matEstimates_case4)
+
+# alpha=0.5
+metrics_a05_case1 <- eval_performance(matEstimates_a05_case1)
+metrics_a05_case2 <- eval_performance(matEstimates_a05_case2)
+metrics_a05_case3 <- eval_performance(matEstimates_a05_case3)
+metrics_a05_case4 <- eval_performance(matEstimates_a05_case4)
+
+# alpha=0.25
+metrics_a025_case1 <- eval_performance(matEstimates_a025_case1)
+metrics_a025_case2 <- eval_performance(matEstimates_a025_case2)
+metrics_a025_case3 <- eval_performance(matEstimates_a025_case3)
+metrics_a025_case4 <- eval_performance(matEstimates_a025_case4)
+
+
 
 ## GL
 metrics_gl_case1 <- eval_performance(matEstimates_gl_case1)
@@ -214,6 +242,15 @@ metrics_lasso_case4 <- eval_performance(matEstimates_lasso_case4)
 
 head(matEstimates_lasso_case2)
 
+
+# Evaluates the performance of the prediction by calculating the average number of correctly identified zero and non-zero predictors across all 1000 simulations and calculating the corresponding percentages.
+# metric_average_case1 is a 6x1 vector with...
+#		row 1 = Average Number of Correct Non-Zero Predictors Identified
+#		row 2 = Average Percent of Correct Non-Zero Predictors Identified
+#		row 3 = Average Number of Correct Zero Predictors Identified
+#		row 4 = Average Percent of Correct Zero Predictors Identified
+#		row 5 = Average Number of predictors that are correctly identified
+#		row 6 = Average Percent of predictors that are correctly identified
 metric_averages <- function(matEstimates_case){
 	averageNumCorrectNonZero <- mean(matEstimates_case[,1])
 	averagePercentCorrectNonZero <- mean(matEstimates_case[,2])
@@ -231,28 +268,42 @@ metric_averages <- function(matEstimates_case){
 }
 
 # cvSGL
-metric_averages(metrics_case1)
-metric_averages(metrics_case2)
-metric_averages(metrics_case3)
-metric_averages(metrics_case4)
+# alpha=0.95
+metric_average_case1 <- metric_averages(metrics_case1)
+metric_average_case2 <-metric_averages(metrics_case2)
+metric_average_case3 <-metric_averages(metrics_case3)
+metric_average_case4 <-metric_averages(metrics_case4)
+
+# alpha=0.5
+metric_average_a05_case1 <- metric_averages(metrics_a05_case1)
+metric_average_a05_case2 <- metric_averages(metrics_a05_case2)
+metric_average_a05_case3 <- metric_averages(metrics_a05_case3)
+metric_average_a05_case4 <- metric_averages(metrics_a05_case4)
+
+# alpha=0.25
+metric_average_a025_case1 <- metric_averages(metrics_a025_case1)
+metric_average_a025_case2 <- metric_averages(metrics_a025_case2)
+metric_average_a025_case3 <- metric_averages(metrics_a025_case3)
+metric_average_a025_case4 <- metric_averages(metrics_a025_case4)
+
 
 ## GL
-metric_averages(metrics_gl_case1)
-metric_averages(metrics_gl_case2)
-metric_averages(metrics_gl_case3)
-metric_averages(metrics_gl_case4)
+metric_average_gl_case1 <- metric_averages(metrics_gl_case1)
+metric_average_gl_case2 <- metric_averages(metrics_gl_case2)
+metric_average_gl_case3 <- metric_averages(metrics_gl_case3)
+metric_average_gl_case4 <- metric_averages(metrics_gl_case4)
 
 ## Lasso
-metric_averages(metrics_lasso_case1)
-metric_averages(metrics_lasso_case2)
-metric_averages(metrics_lasso_case3)
-metric_averages(metrics_lasso_case4)
+metric_average_lasso_case1 <- metric_averages(metrics_lasso_case1)
+metric_average_lasso_case2 <- metric_averages(metrics_lasso_case2)
+metric_average_lasso_case3 <- metric_averages(metrics_lasso_case3)
+metric_average_lasso_case4 <- metric_averages(metrics_lasso_case4)
 
 
-
-# beta_bias is the mean of all 1000 rounds of estimated beta values subtracted by the true beta value
-# Take difference for each row -> Absolute value the difference -> Take Average of the differences
-# For true zero, average over all 0's -> one variable
+# Evaluates the empirical bias of the 15 non-zero betas and 1 combined zero beta
+#	beta_bias is the mean of all 1000 rounds of estimated beta values subtracted by the true beta value
+# 		Take difference for each row -> Absolute value the difference -> Take Average of the differences
+# 		For true zero, average over all 0's -> one variable
 bias_eval <- function(matEstimates_case){
 	beta_bias <- rep(0, 16)
 	for (i in 1:15){
@@ -276,7 +327,6 @@ beta_bias_gl_case1 <- bias_eval(matEstimates_gl_case1)
 beta_bias_gl_case2 <- bias_eval(matEstimates_gl_case2)
 beta_bias_gl_case3 <- bias_eval(matEstimates_gl_case3)
 beta_bias_gl_case4 <- bias_eval(matEstimates_gl_case4)
-beta_bias_gl_case4
 
 ## Lasso
 beta_bias_lasso_case1 <- bias_eval(matEstimates_lasso_case1)
@@ -284,8 +334,8 @@ beta_bias_lasso_case2 <- bias_eval(matEstimates_lasso_case2)
 beta_bias_lasso_case3 <- bias_eval(matEstimates_lasso_case3)
 beta_bias_lasso_case4 <- bias_eval(matEstimates_lasso_case4)
 
-
-# beta_bias_sd is the standard deviation of all 1000 differences between the true beta value and the estimated beta value
+# Evaluates the empirical standard deviation of the 15 non-zero betas and 1 combined zero beta
+# 	beta_bias_sd is the standard deviation of all 1000 differences between the true beta value and the estimated beta value
 bias_sd_eval <- function(matEstimates_case){
 	beta_diff <- matrix(0, nrow=1000, ncol=15)
 	beta_bias_sd <- rep(0, 16)
@@ -312,7 +362,6 @@ beta_bias_sd_gl_case1 <- bias_sd_eval(matEstimates_gl_case1)
 beta_bias_sd_gl_case2 <- bias_sd_eval(matEstimates_gl_case2)
 beta_bias_sd_gl_case3 <- bias_sd_eval(matEstimates_gl_case3)
 beta_bias_sd_gl_case4 <- bias_sd_eval(matEstimates_gl_case4)
-beta_bias_sd_gl_case4
 
 ## Lasso
 beta_bias_sd_lasso_case1 <- bias_sd_eval(matEstimates_lasso_case1)
