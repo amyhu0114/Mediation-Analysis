@@ -136,34 +136,6 @@ matEstimates_lasso_case3 <- simulation(blocki_10by10_case3, 'Lasso')
 matEstimates_lasso_case4 <- simulation(blocki_10by10_case4, 'Lasso')
 
 
-# beta_bias is the mean of all 1000 rounds of estimated beta values subtracted by the true beta value
-
-# Take difference for each row -> Absolute value the difference -> Take Average of the differences
-# For true zero, average over all 0's -> one variable
-beta_bias_gl_case4 <- rep(0, 15)
-for (i in 1:15){
-	beta_bias_gl_case4[i] <- mean(abs(matEstimates_gl_case4[,i] - beta[i]))
-	#print(beta_bias_gl_case4[i])
-	}
-beta_bias_gl_case4
-
-head(matEstimates_lasso_case2)
-beta_bias_lasso_case4 <- rep(0, 15)
-for (i in 1:15){
-	beta_bias_lasso_case4[i] <- mean(matEstimates_lasso_case4[,i]) - beta[i]
-	}
-beta_bias_lasso_case4
-
-
-# beta_bias_sd is the standard deviation of all 1000 differences between the true beta value and the estimated beta value
-beta_diff_gl_case1 <- rep(0, nrow=1000, ncol=15)
-for (i in 1:15){
-	beta_diff_gl_case1[,i] <- matEstimates_gl_case1[,i]
-	}
-beta_diff_gl_case1
-
-
-
 
 ##########Performance Metrics Evaluation#########
 # Evaluates the performance of the prediction by counting the number of correctly identified zero and non-zero predictors and calculating the corresponding percentages.
@@ -275,6 +247,79 @@ metric_averages(metrics_lasso_case1)
 metric_averages(metrics_lasso_case2)
 metric_averages(metrics_lasso_case3)
 metric_averages(metrics_lasso_case4)
+
+
+
+# beta_bias is the mean of all 1000 rounds of estimated beta values subtracted by the true beta value
+# Take difference for each row -> Absolute value the difference -> Take Average of the differences
+# For true zero, average over all 0's -> one variable
+bias_eval <- function(matEstimates_case){
+	beta_bias <- rep(0, 16)
+	for (i in 1:15){
+		beta_bias[i] <- mean(abs(matEstimates_case[,i] - beta[i]))
+		}
+	for (i in 16:100){
+		beta_bias[16] = beta_bias[16] + mean(abs(matEstimates_case[,i] - 0))
+		}
+	beta_bias[16] = beta_bias[16]/85	
+	return(beta_bias)
+}
+
+# cvSGL
+beta_bias_case1 <- bias_eval(matEstimates_case1)
+beta_bias_case2 <- bias_eval(matEstimates_case2)
+beta_bias_case3 <- bias_eval(matEstimates_case3)
+beta_bias_case4 <- bias_eval(matEstimates_case4)
+
+## GL
+beta_bias_gl_case1 <- bias_eval(matEstimates_gl_case1)
+beta_bias_gl_case2 <- bias_eval(matEstimates_gl_case2)
+beta_bias_gl_case3 <- bias_eval(matEstimates_gl_case3)
+beta_bias_gl_case4 <- bias_eval(matEstimates_gl_case4)
+beta_bias_gl_case4
+
+## Lasso
+beta_bias_lasso_case1 <- bias_eval(matEstimates_lasso_case1)
+beta_bias_lasso_case2 <- bias_eval(matEstimates_lasso_case2)
+beta_bias_lasso_case3 <- bias_eval(matEstimates_lasso_case3)
+beta_bias_lasso_case4 <- bias_eval(matEstimates_lasso_case4)
+
+
+# beta_bias_sd is the standard deviation of all 1000 differences between the true beta value and the estimated beta value
+bias_sd_eval <- function(matEstimates_case){
+	beta_diff <- matrix(0, nrow=1000, ncol=15)
+	beta_bias_sd <- rep(0, 16)
+	zero <- c(0)
+	for (i in 1:15){
+		beta_diff[,i] <- matEstimates_case[,i] - beta[i]
+		beta_bias_sd[i] <- sd(beta_diff[,i])
+		}
+	for (i in 16:100){
+		zero <- zero + matEstimates_case[,i]
+		}
+	beta_bias_sd[16] = sd(zero)
+	head(beta_diff)
+	return(beta_bias_sd)
+}
+# cvSGL
+beta_bias_sd_case1 <- bias_sd_eval(matEstimates_case1)
+beta_bias_sd_case2 <- bias_sd_eval(matEstimates_case2)
+beta_bias_sd_case3 <- bias_sd_eval(matEstimates_case3)
+beta_bias_sd_case4 <- bias_sd_eval(matEstimates_case4)
+
+## GL
+beta_bias_sd_gl_case1 <- bias_sd_eval(matEstimates_gl_case1)
+beta_bias_sd_gl_case2 <- bias_sd_eval(matEstimates_gl_case2)
+beta_bias_sd_gl_case3 <- bias_sd_eval(matEstimates_gl_case3)
+beta_bias_sd_gl_case4 <- bias_sd_eval(matEstimates_gl_case4)
+beta_bias_sd_gl_case4
+
+## Lasso
+beta_bias_sd_lasso_case1 <- bias_sd_eval(matEstimates_lasso_case1)
+beta_bias_sd_lasso_case2 <- bias_sd_eval(matEstimates_lasso_case2)
+beta_bias_sd_lasso_case3 <- bias_sd_eval(matEstimates_lasso_case3)
+beta_bias_sd_lasso_case4 <- bias_sd_eval(matEstimates_lasso_case4)
+
 
 
 
