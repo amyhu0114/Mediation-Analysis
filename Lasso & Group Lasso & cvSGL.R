@@ -1,6 +1,6 @@
-install.packages("SGL")
-install.packages("glmnet")
-install.packages("gglasso")
+#install.packages("SGL")
+#install.packages("glmnet")
+#install.packages("gglasso")
 library("SGL")
 #library("glmnet")
 #library("gglasso")
@@ -202,7 +202,7 @@ eval_performance <- function(matEstimates_case){
 		percentCorrectOverall <- 0
 	}
 
-	print(head(metrics))
+	#print(head(metrics))
 	return(metrics)
 }
 
@@ -252,6 +252,7 @@ head(matEstimates_lasso_case2)
 #		row 5 = Average Number of predictors that are correctly identified
 #		row 6 = Average Percent of predictors that are correctly identified
 metric_averages <- function(matEstimates_case){
+	metric_avg <- rep(0, 6)
 	averageNumCorrectNonZero <- mean(matEstimates_case[,1])
 	averagePercentCorrectNonZero <- mean(matEstimates_case[,2])
 	averageNumCorrectZero <- mean(matEstimates_case[,3])
@@ -259,12 +260,20 @@ metric_averages <- function(matEstimates_case){
 	averageNumCorrectOverall <- mean(matEstimates_case[,5])
 	averagePercentCorrectOverall <- mean(matEstimates_case[,6])
 	
-	print(averageNumCorrectNonZero)
-	print(averagePercentCorrectNonZero)
-	print(averageNumCorrectZero)
-	print(averagePercentCorrectZero)
-	print(averageNumCorrectOverall)
-	print(averagePercentCorrectOverall)
+	metric_avg[1] = averageNumCorrectNonZero
+	metric_avg[2] = averagePercentCorrectNonZero
+	metric_avg[3] = averageNumCorrectZero
+	metric_avg[4] = averagePercentCorrectZero
+	metric_avg[5] = averageNumCorrectOverall
+	metric_avg[6] = averagePercentCorrectOverall
+	#print(averageNumCorrectNonZero)
+	#print(averagePercentCorrectNonZero)
+	#print(averageNumCorrectZero)
+	#print(averagePercentCorrectZero)
+	#print(averageNumCorrectOverall)
+	#print(averagePercentCorrectOverall)
+	print(metric_avg)
+	return(metric_avg)
 }
 
 # cvSGL
@@ -313,6 +322,7 @@ bias_eval <- function(matEstimates_case){
 		beta_bias[16] = beta_bias[16] + mean(abs(matEstimates_case[,i] - 0))
 		}
 	beta_bias[16] = beta_bias[16]/85	
+	print(beta_bias)
 	return(beta_bias)
 }
 
@@ -349,6 +359,7 @@ bias_sd_eval <- function(matEstimates_case){
 		}
 	beta_bias_sd[16] = sd(zero)
 	head(beta_diff)
+	print(beta_bias_sd)
 	return(beta_bias_sd)
 }
 # cvSGL
