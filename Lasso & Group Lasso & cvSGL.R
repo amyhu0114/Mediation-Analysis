@@ -1,4 +1,4 @@
-#install.packages("SGL")
+install.packages("SGL")
 #install.packages("glmnet")
 #install.packages("gglasso")
 library("SGL")
@@ -92,8 +92,6 @@ simulation <- function(blocki_10by10, model_type, a){
 		if(model_type=='GL'){
 			#??cvSGL
 			cvFit = cvSGL(data, index, type="linear", alpha=0)
-			cvFit$lambdas[id.optimal]
-			cvFit$fit$beta[,id.optimal]
 			cvs <- cvFit$lldiff
 			id.optimal <- which.min(cvs)
 			optimalLambdas[i] <- id.optimal
