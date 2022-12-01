@@ -306,6 +306,7 @@ metric_average_lasso_case2 <- metric_averages(metrics_lasso_case2)
 metric_average_lasso_case3 <- metric_averages(metrics_lasso_case3)
 metric_average_lasso_case4 <- metric_averages(metrics_lasso_case4)
 
+save.image("lassoGLcvSGL.Rdata")
 
 # Evaluates the empirical bias of the 15 non-zero betas and 1 combined zero beta
 #	beta_bias is the mean of all 1000 rounds of estimated beta values subtracted by the true beta value
