@@ -307,6 +307,10 @@ metric_average_lasso_case3 <- metric_averages(metrics_lasso_case3)
 metric_average_lasso_case4 <- metric_averages(metrics_lasso_case4)
 
 save.image("lassoGLcvSGL.Rdata")
+getwd()
+setwd("/Users/amyhu/Documents/Penalization Method")
+load("lassoGLcvSGL.Rdata")
+
 
 # Evaluates the empirical bias of the 15 non-zero betas and 1 combined zero beta
 #	beta_bias is the mean of all 1000 rounds of estimated beta values subtracted by the true beta value
@@ -326,10 +330,24 @@ bias_eval <- function(matEstimates_case){
 }
 
 # cvSGL
+# alpha=0.95
 beta_bias_case1 <- bias_eval(matEstimates_case1)
 beta_bias_case2 <- bias_eval(matEstimates_case2)
 beta_bias_case3 <- bias_eval(matEstimates_case3)
 beta_bias_case4 <- bias_eval(matEstimates_case4)
+
+# alpha=0.5
+beta_bias_a05_case1 <- bias_eval(matEstimates_a05_case1)
+beta_bias_a05_case2 <- bias_eval(matEstimates_a05_case2)
+beta_bias_a05_case3 <- bias_eval(matEstimates_a05_case3)
+beta_bias_a05_case4 <- bias_eval(matEstimates_a05_case4)
+
+# alpha=0.25
+beta_bias_a025_case1 <- bias_eval(matEstimates_a025_case1)
+beta_bias_a025_case2 <- bias_eval(matEstimates_a025_case2)
+beta_bias_a025_case3 <- bias_eval(matEstimates_a025_case3)
+beta_bias_a025_case4 <- bias_eval(matEstimates_a025_case4)
+
 
 ## GL
 beta_bias_gl_case1 <- bias_eval(matEstimates_gl_case1)
@@ -362,10 +380,23 @@ bias_sd_eval <- function(matEstimates_case){
 	return(beta_bias_sd)
 }
 # cvSGL
+# alpha=0.95
 beta_bias_sd_case1 <- bias_sd_eval(matEstimates_case1)
 beta_bias_sd_case2 <- bias_sd_eval(matEstimates_case2)
 beta_bias_sd_case3 <- bias_sd_eval(matEstimates_case3)
 beta_bias_sd_case4 <- bias_sd_eval(matEstimates_case4)
+
+# alpha=0.5
+beta_bias_sd_a05_case1 <- bias_sd_eval(matEstimates_a05_case1)
+beta_bias_sd_a05_case2 <- bias_sd_eval(matEstimates_a05_case2)
+beta_bias_sd_a05_case3 <- bias_sd_eval(matEstimates_a05_case3)
+beta_bias_sd_a05_case4 <- bias_sd_eval(matEstimates_a05_case4)
+
+# alpha=0.25
+beta_bias_sd_a025_case1 <- bias_sd_eval(matEstimates_a025_case1)
+beta_bias_sd_a025_case2 <- bias_sd_eval(matEstimates_a025_case2)
+beta_bias_sd_a025_case3 <- bias_sd_eval(matEstimates_a025_case3)
+beta_bias_sd_a025_case4 <- bias_sd_eval(matEstimates_a025_case4)
 
 ## GL
 beta_bias_sd_gl_case1 <- bias_sd_eval(matEstimates_gl_case1)
